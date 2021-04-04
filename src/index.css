@@ -49,6 +49,18 @@ h1 {
     float: right;
     clear: right;
     transition: width 0.4s linear;
+    text-align: right;
+}
+
+.menu > .selector > p {
+	margin-bottom: 0;
+    margin-top: 0;
+}
+
+.menu .active, .menu .selector:hover {
+    width: 65px !important;
+    transition: width 0.4s linear;
+    cursor: pointer;
 }
 
 .menu .selector .circle {
@@ -59,4 +71,12 @@ h1 {
     border: 1px solid #5c5457;
     float: left;
     margin: 5px 5px 5px 0px;
+}
+
+.menu #online {
+    background-color: #b8cca6;
+}
+
+.menu #offline {
+    background-color: #8ea7c2;
 }

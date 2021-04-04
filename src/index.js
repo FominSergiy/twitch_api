@@ -7,26 +7,36 @@ const Row = () => {
 }
 
 const Selector = (props) => {
+    return (
+        <div className={"selector"}>
+            <div className="circle" id={props.id}></div>
+            <p>{props.text}</p>
+        </div>
+    )
+}
 
+const Menu = () => {
+    const availableSelectors = ['all', 'online', 'offline'];
+    const SelectorList = availableSelectors.map(s => {
+        return (
+            <Selector text={s} id={s} key={s}></Selector>
+        );
+    });
+    console.log(SelectorList);
 
     return (
-        <div class={"selector"}>
-            <div class="circle"></div>
-            <p>{props.text}</p>
+        <div className="menu">
+            {SelectorList}
         </div>
     )
 }
 
 const App = () => {
     return (
-        <div class="container">
-            <div class="row" id="header">
+        <div className="container">
+            <div className="row" id="header">
                 <h1>Twitch Streamers</h1>
-                <div class="menu">
-                    <Selector text="all"></Selector>
-                    <Selector text="online"></Selector>
-                    <Selector text='offline'></Selector>
-                </div>
+                <Menu></Menu>
             </div>
         </div>
     )
