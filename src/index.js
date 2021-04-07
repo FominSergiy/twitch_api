@@ -7,7 +7,14 @@ import { store } from './reducer.js';
 import { Provider } from 'react-redux';
 import { useSelector, useDispatch } from 'react-redux';
 
-const Row = () => {
+const Row = (props) => {
+    return (
+        <div className={`row ${props.row_data.status}`}>
+            <div className="col-xs-2 col-sm-1">
+                <img src={props.row_data.thumbnail_url} className="logo" alt='sorry' />
+            </div>
+        </div>
+    )
 
 }
 
@@ -22,22 +29,24 @@ const Selector = (props) => {
 
 const Menu = () => {
     //this below provides nav divs and a menu div wrapper
-    const availableSelectors = ['all', 'online', 'offline'];
-    const SelectorList = availableSelectors.map(s => {
+    const availableNavOptions = ['all', 'online', 'offline'];
+
+    const navItems = availableNavOptions.map(s => {
         return (
             <Selector text={s} id={s} key={s}></Selector>
         );
     });
-    console.log(SelectorList);
-
+    // console.log(SelectorList);
     return (
         <div className="menu">
-            {SelectorList}
+            {navItems}
         </div>
     )
 }
 
 const App = () => {
+    const activeStreams = useSelector(state => state);
+    // console.log(data);
     const dispatch = useDispatch();
 
     // run on first render only
@@ -48,14 +57,13 @@ const App = () => {
         promise
             .then(data => {
                 const filteredData = data.map(r => processRow(r));
-                console.log(filteredData);
+                // console.log(filteredData);
                 dispatch({
                     type: 'ADD ACTIVE STREAMS',
                     streams: filteredData
                 });
             })
             .catch(err => console.log(err))
-
     }, []);
 
 
@@ -64,8 +72,12 @@ const App = () => {
         // getToken().then((res) => console.log(res));
         const data = getToken()
             .then((res) => getTopActiveStreams(res));
-        console.dir(data)
+        // console.dir(data)
     }
+
+    const activeRows = activeStreams.map(row => {
+        return <Row row_data={row}></Row>
+    })
 
     return (
         <div className="container">
@@ -74,6 +86,7 @@ const App = () => {
                 <h1>Twitch Streamers</h1>
                 <Menu></Menu>
             </div>
+            {activeRows}
         </div >
     )
 }
@@ -101,7 +114,7 @@ async function getToken() {
             'https://bjnf4e2ide.execute-api.ca-central-1.amazonaws.com/default/get-twitch-bearer-token'
         );
         localStorage.setItem("token", response['data']);
-        console.log(response['data']);
+        // console.log(response['data']);
         return response['data'];
     } catch (error) {
         console.error(error);
@@ -122,7 +135,7 @@ async function getTopActiveStreams(token) {
         // console.log(response);
         return response['data']['data']
     } catch (error) {
-        console.error(error);
+        // console.error(error);
     }
 }
 
@@ -134,12 +147,12 @@ const processRow = (row) => {
     const height = 50;
 
 
-    const thumb_url = row.thumbnail_url.substr(1, row.thumbnail_url.search("{") - 1);
+    const thumb_url = row.thumbnail_url.substr(0, row.thumbnail_url.search("{") - 1);
 
     return {
-        online: true,
+        status: 'online',
         game_id: row.game_id,
-        thumbnail_url: thumb_url + `${width}x${height}.jpg`,
+        thumbnail_url: thumb_url + `-${width}x${height}.jpg`,
         title: row.title,
         url: `https://www.twitch.tv/${row.user_login}`
     };

@@ -1,9 +1,9 @@
 import { createStore, combineReducers } from 'redux';
 
-const TwitchDataReducer = (state = [{}], action) => {
+const TwitchDataReducer = (state = [], action) => {
     switch (action.type) {
-        case 'ADD ACTIVE STREAM':
-            console.log('hi there');
+        case 'ADD ACTIVE STREAMS':
+            return [...state, ...action.streams];
         default:
             return state;
     }
