@@ -8,9 +8,9 @@ import { Provider } from 'react-redux';
 import { useSelector, useDispatch } from 'react-redux';
 
 const Row = (props) => {
+    const row_data = props.row_data;
 
     if (props.status === 'online') {
-        const row_data = props.row_data;
         return (
             <div className={`row ${row_data.status}`}>
                 <div className="stream">
@@ -27,6 +27,21 @@ const Row = (props) => {
             </div>
         )
     } else {
+        return (
+            <div className={`row ${row_data.status}`}>
+                <div className="stream">
+                    <img src={row_data.thumbnail_url}
+                        className="logo"
+                        alt='sorry' />
+                </div>
+                <div className="stream" id="name">
+                    {row_data.user_name}
+                </div>
+                <div className="stream" id="streaming">
+                    {row_data.title}
+                </div>
+            </div >
+        )
 
     }
 }
@@ -75,27 +90,33 @@ const App = () => {
     // run on first render only
     React.useEffect(() => {
 
-        const promise = getToken()
+        // get all active streams
+        getToken()
             .then(token => getTopActiveStreams(token))
-
-        const otherPromise = getToken()
-            .then(token => getTaskChannels(token))
-
-        promise
             .then(data => {
-                const filteredData = data.map(r => processRow(r));
-                // console.log(filteredData);
                 dispatch({
                     type: 'ADD ACTIVE STREAMS',
-                    streams: filteredData
+                    streams: data
                 });
             })
-            .catch(err => console.log(err))
+            .catch(err => console.log(err));
+
+
+        // get streams from our given assignment
+        getToken()
+            .then(token => getTaskChannels(token))
+            .then(data => {
+                dispatch({
+                    type: 'ADD ACTIVE STREAMS',
+                    streams: data
+                });
+            })
+            .catch(err => console.log(err));
     }, []);
 
 
     const cl = () => {
-        //! CONTINUE HERE - NEED TO WORK WITH THIS PROMISE
+        //! CONTINUE HERE - NEED TO WORK WITH THIS getActiveStreams
         // getToken().then((res) => console.log(res));
         const data = getToken()
             .then((res) => getTopActiveStreams(res));
@@ -148,12 +169,14 @@ function getVisibleRows(rows, filter) {
 
 async function getToken() {
 
+    // get token from the local store if it is in there
     if (localStorage.getItem("token") !== null) {
         const token = localStorage.getItem("token");
         console.log('token returned from local storage!');
         return token;
     }
 
+    // get a new token if local store is empty
     try {
         const response = await axios.get(
             'https://bjnf4e2ide.execute-api.ca-central-1.amazonaws.com/default/get-twitch-bearer-token'
@@ -178,7 +201,9 @@ async function getTopActiveStreams(token) {
             }
         );
         // console.log(response);
-        return response['data']['data']
+        const data = response['data']['data'].map(r => processRow(r));
+        return data;
+
     } catch (error) {
         // console.error(error);
     }
@@ -204,20 +229,22 @@ async function getTaskChannels(token) {
                 }
             }
         );
-        // console.log(response);
-        const check = response['data']['data'].map(row => {
-            //! whatever good add as online row
+
+        // if a channel is offline, the data array will not have corresponding
+        // channel results
+        const onlineStreams = response['data']['data'].map(row => {
+
             if (channelsToSearch.includes(row.user_name)) {
-                console.log(`yay:${row.user_name}`);
-                //processRow();
-            } else {
-                //! whatever did not match add ass offline row
-                //processOfflineRow()
+                channelsToSearch.pop(row.user_name);
+                return processRow(row);
             }
+        });
 
+        const offlineStreams = channelsToSearch.map(
+            channelName => processOfflineRow(channelName)
+        );
 
-        })
-        // return response['data']['data']
+        return [...onlineStreams, ...offlineStreams];
     } catch (error) {
         // console.error(error);
     }
@@ -238,5 +265,14 @@ const processRow = (row) => {
         title: row.title,
         url: `https://www.twitch.tv/${row.user_login}`,
         user_name: row.user_login
+    };
+}
+
+const processOfflineRow = (channelName) => {
+    return {
+        status: 'offline',
+        thumbnail_url: '../assets/twitch_logo.png',
+        title: 'Offline',
+        user_name: channelName
     };
 }
