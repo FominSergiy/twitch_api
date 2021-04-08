@@ -8,14 +8,21 @@ import { Provider } from 'react-redux';
 import { useSelector, useDispatch } from 'react-redux';
 
 const Row = (props) => {
+    const row_data = props.row_data;
+
     return (
-        <div className={`row ${props.row_data.status}`}>
-            <div className="col-xs-2 col-sm-1">
-                <img src={props.row_data.thumbnail_url} className="logo" alt='sorry' />
+        <div className={`row ${row_data.status}`}>
+            <div className="stream">
+                <img src={row_data.thumbnail_url} className="logo" alt='sorry' />
+            </div>
+            <div className="stream" id="name">
+                <a href={row_data.url}>{row_data.user_name}</a>
+            </div>
+            <div className="stream" id="streaming">
+                {row_data.title}
             </div>
         </div>
     )
-
 }
 
 const Selector = (props) => {
@@ -86,7 +93,9 @@ const App = () => {
                 <h1>Twitch Streamers</h1>
                 <Menu></Menu>
             </div>
-            {activeRows}
+            <div>
+                {activeRows}
+            </div>
         </div >
     )
 }
@@ -154,6 +163,7 @@ const processRow = (row) => {
         game_id: row.game_id,
         thumbnail_url: thumb_url + `-${width}x${height}.jpg`,
         title: row.title,
-        url: `https://www.twitch.tv/${row.user_login}`
+        url: `https://www.twitch.tv/${row.user_login}`,
+        user_name: row.user_login
     };
 }
