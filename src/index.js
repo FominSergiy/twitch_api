@@ -8,21 +8,27 @@ import { Provider } from 'react-redux';
 import { useSelector, useDispatch } from 'react-redux';
 
 const Row = (props) => {
-    const row_data = props.row_data;
 
-    return (
-        <div className={`row ${row_data.status}`}>
-            <div className="stream">
-                <img src={row_data.thumbnail_url} className="logo" alt='sorry' />
+    if (props.status === 'online') {
+        const row_data = props.row_data;
+        return (
+            <div className={`row ${row_data.status}`}>
+                <div className="stream">
+                    <img src={row_data.thumbnail_url}
+                        className="logo"
+                        alt='sorry' />
+                </div>
+                <div className="stream" id="name">
+                    <a href={row_data.url}>{row_data.user_name}</a>
+                </div>
+                <div className="stream" id="streaming">
+                    {row_data.title}
+                </div>
             </div>
-            <div className="stream" id="name">
-                <a href={row_data.url}>{row_data.user_name}</a>
-            </div>
-            <div className="stream" id="streaming">
-                {row_data.title}
-            </div>
-        </div>
-    )
+        )
+    } else {
+
+    }
 }
 
 const Selector = (props) => {
@@ -52,7 +58,7 @@ const Menu = () => {
             <Selector text={s} id={s} key={s}></Selector>
         );
     });
-    // console.log(SelectorList);
+
     return (
         <div className="menu">
             {navItems}
@@ -63,15 +69,17 @@ const Menu = () => {
 const App = () => {
     const activeStreams = useSelector(state => state.twitchDataReducer);
     const filter = useSelector(state => state.changeFilterReducer);
-    const dispatch = useDispatch();
-
-
     const displayRows = getVisibleRows(activeStreams, filter);
+    const dispatch = useDispatch();
 
     // run on first render only
     React.useEffect(() => {
+
         const promise = getToken()
-            .then((token) => getTopActiveStreams(token));
+            .then(token => getTopActiveStreams(token))
+
+        const otherPromise = getToken()
+            .then(token => getTaskChannels(token))
 
         promise
             .then(data => {
@@ -95,8 +103,13 @@ const App = () => {
     }
 
     const activeRows = displayRows.map(row => {
-        return <Row row_data={row} key={row.user_name}></Row>
-    })
+        return (
+            <Row row_data={row}
+                key={row.user_name}
+                status={row.status}>
+            </Row>
+        )
+    });
 
     return (
         <div className="container">
@@ -108,7 +121,7 @@ const App = () => {
             <div>
                 {activeRows}
             </div>
-        </div >
+        </div>
     )
 }
 
@@ -166,6 +179,45 @@ async function getTopActiveStreams(token) {
         );
         // console.log(response);
         return response['data']['data']
+    } catch (error) {
+        // console.error(error);
+    }
+}
+
+async function getTaskChannels(token) {
+
+    const channelsToSearch = [
+        "ESL_SC2", "OgamingSC2",
+        "cretetion", "freecodecamp",
+        "storbeck", "habathcx",
+        "RobotCaleb", "noobs2ninjas"
+    ];
+    const queryString = `user_login=${channelsToSearch.join("&user_login=")}`;
+
+    try {
+        const response = await axios.get(
+            `https://api.twitch.tv/helix/streams?${queryString}`,
+            {
+                headers: {
+                    'Authorization': `${token}`,
+                    'Client-Id': '8nxrw92890jbiwzodkdlcfh70wvgqv'
+                }
+            }
+        );
+        // console.log(response);
+        const check = response['data']['data'].map(row => {
+            //! whatever good add as online row
+            if (channelsToSearch.includes(row.user_name)) {
+                console.log(`yay:${row.user_name}`);
+                //processRow();
+            } else {
+                //! whatever did not match add ass offline row
+                //processOfflineRow()
+            }
+
+
+        })
+        // return response['data']['data']
     } catch (error) {
         // console.error(error);
     }
