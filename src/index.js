@@ -26,8 +26,17 @@ const Row = (props) => {
 }
 
 const Selector = (props) => {
+    const dispatch = useDispatch();
+
     return (
-        <div className={"selector"}>
+        <div className={"selector"}
+            onClick={e => {
+                e.preventDefault();
+                dispatch({
+                    type: "SET_VISIBILITY_FILTER",
+                    filter: props.text
+                });
+            }}>
             <div className="circle" id={props.id}></div>
             <p>{props.text}</p>
         </div>
@@ -52,9 +61,12 @@ const Menu = () => {
 }
 
 const App = () => {
-    const activeStreams = useSelector(state => state);
-    // console.log(data);
+    const activeStreams = useSelector(state => state.twitchDataReducer);
+    const filter = useSelector(state => state.changeFilterReducer);
     const dispatch = useDispatch();
+
+
+    const displayRows = getVisibleRows(activeStreams, filter);
 
     // run on first render only
     React.useEffect(() => {
@@ -82,8 +94,8 @@ const App = () => {
         // console.dir(data)
     }
 
-    const activeRows = activeStreams.map(row => {
-        return <Row row_data={row}></Row>
+    const activeRows = displayRows.map(row => {
+        return <Row row_data={row} key={row.user_name}></Row>
     })
 
     return (
@@ -109,6 +121,17 @@ ReactDOM.render(
 
 
 //? SUPPORTING FUNCTIONS
+
+function getVisibleRows(rows, filter) {
+    switch (filter) {
+        case 'all':
+            return rows;
+        case 'online':
+            return rows.filter(r => r.status === 'online');
+        case 'offline':
+            return rows.filter(r => r.status === 'offline');
+    }
+}
 
 async function getToken() {
 
@@ -150,11 +173,9 @@ async function getTopActiveStreams(token) {
 
 const processRow = (row) => {
     // process each row returned by the twitch streams api
-
     // thumb url width ahd height
     const width = 50;
     const height = 50;
-
 
     const thumb_url = row.thumbnail_url.substr(0, row.thumbnail_url.search("{") - 1);
 
