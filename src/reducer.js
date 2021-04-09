@@ -11,7 +11,7 @@ const changeFilterReducer = (state = "all", action) => {
 
 const twitchDataReducer = (state = [], action) => {
     switch (action.type) {
-        case 'ADD ACTIVE STREAMS':
+        case 'ADD STREAMS':
             return [...state, ...action.streams];
         default:
             return state;

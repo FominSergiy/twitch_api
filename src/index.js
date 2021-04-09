@@ -1,57 +1,44 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import axios from 'axios';
-import logo from './assets/twitch_icon.png';
 
 import { store } from './reducer.js';
 import { Provider } from 'react-redux';
 import { useSelector, useDispatch } from 'react-redux';
 
+import './index.css';
+import logo from './assets/twitch_icon.png';
+
+
 const Row = (props) => {
     const row_data = props.row_data;
 
-    if (props.status === 'online') {
-        return (
-            <div className={`row ${row_data.status}`}>
-                <div className="stream">
-                    <img src={row_data.thumbnail_url}
-                        className="logo"
-                        alt='sorry' />
-                </div>
-                <div className="stream" id="name">
-                    <a href={row_data.url}>{row_data.user_name}</a>
-                </div>
-                <div className="stream" id="streaming">
-                    {row_data.title}
-                </div>
-            </div>
-        )
-    } else {
-        return (
-            <div className={`row ${row_data.status}`}>
-                <div className="stream">
-                    <img src={row_data.thumbnail_url}
-                        className="logo"
-                        alt='sorry' />
-                </div>
-                <div className="stream" id="name">
-                    {row_data.user_name}
-                </div>
-                <div className="stream" id="streaming">
-                    {row_data.title}
-                </div>
-            </div >
-        )
+    const streamName = props.status === 'online'
+        ? <a href={row_data.url}>{row_data.user_name}</a>
+        : row_data.user_name;
 
-    }
+    return (
+        <div className={`row ${row_data.status}`}>
+            <div className="stream">
+                <img src={row_data.thumbnail_url}
+                    className="logo"
+                    alt='sorry' />
+            </div>
+            <div className="stream" id="name">
+                {streamName}
+            </div>
+            <div className="stream" id="streaming">
+                {row_data.title}
+            </div>
+        </div>
+    )
 }
 
 const Selector = (props) => {
     const dispatch = useDispatch();
 
     return (
-        <div className={`selector ${props.active}`}
+        <div className={`selector ${props.active}`.trimEnd()}
             onClick={e => {
                 e.preventDefault();
                 dispatch({
@@ -71,7 +58,8 @@ const Menu = () => {
     const availableNavOptions = ['all', 'online', 'offline'];
 
     const navItems = availableNavOptions.map(s => {
-        const active = s === activeSelector ? "active" : " ";
+        // set this css class to a current active nav item
+        const active = s === activeSelector ? "active" : "";
 
         return (
             <Selector
@@ -92,37 +80,28 @@ const Menu = () => {
 const App = () => {
     const activeStreams = useSelector(state => state.twitchDataReducer);
     const filter = useSelector(state => state.changeFilterReducer);
-    const displayRows = getVisibleRows(activeStreams, filter);
     const dispatch = useDispatch();
 
     // run on first render only
     React.useEffect(() => {
+        const getDataFunctions = [getTopActiveStreams, getChallengeStreams];
 
-        // get all active streams
-        getToken()
-            .then(token => getTopActiveStreams(token))
-            .then(data => {
-                dispatch({
-                    type: 'ADD ACTIVE STREAMS',
-                    streams: data
-                });
-            })
-            .catch(err => console.log(err));
-
-
-        // get streams from our given assignment
-        getToken()
-            .then(token => getTaskChannels(token))
-            .then(data => {
-                dispatch({
-                    type: 'ADD ACTIVE STREAMS',
-                    streams: data
-                });
-            })
-            .catch(err => console.log(err));
+        getDataFunctions.forEach(func => {
+            // get all streams from two get data functions
+            getToken()
+                .then(token => func(token))
+                .then(data => {
+                    dispatch({
+                        type: 'ADD STREAMS',
+                        streams: data
+                    });
+                })
+                .catch(err => console.log(err));
+        })
     }, []);
 
 
+    const displayRows = getVisibleRows(activeStreams, filter);
     const activeRows = displayRows.map(row => {
         return (
             <Row row_data={row}
@@ -172,6 +151,7 @@ async function getToken() {
     if (localStorage.getItem("token") !== null) {
         const token = localStorage.getItem("token");
         console.log('token returned from local storage!');
+
         return token;
     }
 
@@ -180,9 +160,10 @@ async function getToken() {
         const response = await axios.get(
             'https://bjnf4e2ide.execute-api.ca-central-1.amazonaws.com/default/get-twitch-bearer-token'
         );
+
         localStorage.setItem("token", response['data']);
-        // console.log(response['data']);
         return response['data'];
+
     } catch (error) {
         console.error(error);
     }
@@ -199,16 +180,16 @@ async function getTopActiveStreams(token) {
                 }
             }
         );
-        // console.log(response);
-        const data = response['data']['data'].map(r => processRow(r));
+
+        const data = response['data']['data'].map(r => processOnlineRow(r));
         return data;
 
     } catch (error) {
-        // console.error(error);
+        console.error(error);
     }
 }
 
-async function getTaskChannels(token) {
+async function getChallengeStreams(token) {
 
     let channelsToSearch = [
         "ESL_SC2", "OgamingSC2",
@@ -216,6 +197,7 @@ async function getTaskChannels(token) {
         "storbeck", "habathcx",
         "RobotCaleb", "noobs2ninjas"
     ];
+
     const queryString = `user_login=${channelsToSearch.join("&user_login=")}`;
 
     try {
@@ -233,25 +215,29 @@ async function getTaskChannels(token) {
         // channel results
         const onlineStreams = response['data']['data'].map(row => {
             if (channelsToSearch.includes(row.user_name)) {
+
+                // remove active streams from list of channels we searched
                 channelsToSearch = channelsToSearch.filter(elem => {
                     return elem !== row.user_name
                 });
 
-                return processRow(row);
+                return processOnlineRow(row);
             }
         });
 
+        // add offline channels
         const offlineStreams = channelsToSearch.map(
             channelName => processOfflineRow(channelName)
         );
 
         return [...onlineStreams, ...offlineStreams];
+
     } catch (error) {
-        // console.error(error);
+        console.error(error);
     }
 }
 
-const processRow = (row) => {
+const processOnlineRow = (row) => {
     // process each row returned by the twitch streams api
     // thumb url width ahd height
     const width = 50;
