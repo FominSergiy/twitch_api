@@ -51,7 +51,7 @@ const Selector = (props) => {
     const dispatch = useDispatch();
 
     return (
-        <div className={"selector"}
+        <div className={`selector ${props.active}`}
             onClick={e => {
                 e.preventDefault();
                 dispatch({
@@ -66,12 +66,19 @@ const Selector = (props) => {
 }
 
 const Menu = () => {
+    const activeSelector = useSelector(state => state.changeFilterReducer);
     //this below provides nav divs and a menu div wrapper
     const availableNavOptions = ['all', 'online', 'offline'];
 
     const navItems = availableNavOptions.map(s => {
+        const active = s === activeSelector ? "active" : " ";
+
         return (
-            <Selector text={s} id={s} key={s}></Selector>
+            <Selector
+                text={s}
+                id={s}
+                key={s}
+                active={active}></Selector>
         );
     });
 
@@ -116,14 +123,6 @@ const App = () => {
     }, []);
 
 
-    const cl = () => {
-        //! CONTINUE HERE - NEED TO WORK WITH THIS getActiveStreams
-        // getToken().then((res) => console.log(res));
-        const data = getToken()
-            .then((res) => getTopActiveStreams(res));
-        // console.dir(data)
-    }
-
     const activeRows = displayRows.map(row => {
         return (
             <Row row_data={row}
@@ -135,7 +134,6 @@ const App = () => {
 
     return (
         <div className="container">
-            <button onClick={() => cl()}>Click Me</button>
             <div className="row" id="header">
                 <h1>Twitch Streamers</h1>
                 <Menu></Menu>
