@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import axios from 'axios';
+import logo from './assets/twitch_icon.png';
 
 import { store } from './reducer.js';
 import { Provider } from 'react-redux';
@@ -211,7 +212,7 @@ async function getTopActiveStreams(token) {
 
 async function getTaskChannels(token) {
 
-    const channelsToSearch = [
+    let channelsToSearch = [
         "ESL_SC2", "OgamingSC2",
         "cretetion", "freecodecamp",
         "storbeck", "habathcx",
@@ -233,9 +234,11 @@ async function getTaskChannels(token) {
         // if a channel is offline, the data array will not have corresponding
         // channel results
         const onlineStreams = response['data']['data'].map(row => {
-
             if (channelsToSearch.includes(row.user_name)) {
-                channelsToSearch.pop(row.user_name);
+                channelsToSearch = channelsToSearch.filter(elem => {
+                    return elem !== row.user_name
+                });
+
                 return processRow(row);
             }
         });
@@ -271,8 +274,8 @@ const processRow = (row) => {
 const processOfflineRow = (channelName) => {
     return {
         status: 'offline',
-        thumbnail_url: '../assets/twitch_logo.png',
+        thumbnail_url: logo,
         title: 'Offline',
-        user_name: channelName
+        user_name: channelName.toLowerCase()
     };
 }
