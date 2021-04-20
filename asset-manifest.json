@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/twitch_api/static/css/main.b38cb118.chunk.css",
+    "main.js": "/twitch_api/static/js/main.e66c6548.chunk.js",
+    "main.js.map": "/twitch_api/static/js/main.e66c6548.chunk.js.map",
+    "runtime-main.js": "/twitch_api/static/js/runtime-main.12d65e08.js",
+    "runtime-main.js.map": "/twitch_api/static/js/runtime-main.12d65e08.js.map",
+    "static/js/2.9e6d48c9.chunk.js": "/twitch_api/static/js/2.9e6d48c9.chunk.js",
+    "static/js/2.9e6d48c9.chunk.js.map": "/twitch_api/static/js/2.9e6d48c9.chunk.js.map",
+    "index.html": "/twitch_api/index.html",
+    "static/css/main.b38cb118.chunk.css.map": "/twitch_api/static/css/main.b38cb118.chunk.css.map",
+    "static/js/2.9e6d48c9.chunk.js.LICENSE.txt": "/twitch_api/static/js/2.9e6d48c9.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.12d65e08.js",
+    "static/js/2.9e6d48c9.chunk.js",
+    "static/css/main.b38cb118.chunk.css",
+    "static/js/main.e66c6548.chunk.js"
+  ]
+}
