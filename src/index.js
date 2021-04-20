@@ -148,8 +148,8 @@ function getVisibleRows(rows, filter) {
 async function getToken() {
 
     // get token from the local store if it is in there
-    if (localStorage.getItem("token") !== null) {
-        const token = localStorage.getItem("token");
+    if (sessionStorage.getItem("token") !== null) {
+        const token = sessionStorage.getItem("token");
         console.log('token returned from local storage!');
 
         return token;
@@ -161,7 +161,7 @@ async function getToken() {
             'https://bjnf4e2ide.execute-api.ca-central-1.amazonaws.com/default/get-twitch-bearer-token'
         );
 
-        localStorage.setItem("token", response['data']);
+        sessionStorage.setItem("token", response['data']);
         return response['data'];
 
     } catch (error) {
