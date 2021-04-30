@@ -3,7 +3,7 @@ import logo from './assets/twitch_icon.png';
 import * as Constants from './constants.js';
 
 
-export async function getToken() {
+export const getToken = async () => {
 
     // get token from the local store if it is in there
     if (sessionStorage.getItem("token") !== null) {
@@ -25,7 +25,7 @@ export async function getToken() {
     }
 }
 
-export async function getTopActiveStreams(token) {
+export const getTopActiveStreams = async (token) => {
     try {
         const response = await axios.get(
             `${Constants.TWITCH_STREAMS_ENDPOINT}/`,
@@ -45,7 +45,7 @@ export async function getTopActiveStreams(token) {
     }
 }
 
-export async function getChallengeStreams(token) {
+export const getChallengeStreams = async (token) => {
 
     let channelsToSearch = [
         "ESL_SC2", "OgamingSC2",
@@ -120,7 +120,7 @@ const processOfflineRow = (channelName) => {
     };
 }
 
-export function getVisibleRows(rows, filter) {
+export const getVisibleRows = (rows, filter) => {
     switch (filter) {
         case 'all':
             return rows;
