@@ -1,5 +1,6 @@
 import axios from 'axios';
 import logo from './assets/twitch_icon.png';
+import * as Constants from './constants.js';
 
 
 export async function getToken() {
@@ -14,9 +15,7 @@ export async function getToken() {
 
     // get a new token if local store is empty
     try {
-        const response = await axios.get(
-            'https://bjnf4e2ide.execute-api.ca-central-1.amazonaws.com/default/get-twitch-bearer-token'
-        );
+        const response = await axios.get(Constants.TOKEN_END_POINT);
 
         sessionStorage.setItem("token", response['data']);
         return response['data'];
@@ -29,11 +28,11 @@ export async function getToken() {
 export async function getTopActiveStreams(token) {
     try {
         const response = await axios.get(
-            'https://api.twitch.tv/helix/streams/',
+            `${Constants.TWITCH_STREAMS_ENDPOINT}/`,
             {
                 headers: {
                     'Authorization': `${token}`,
-                    'Client-Id': '8nxrw92890jbiwzodkdlcfh70wvgqv'
+                    'Client-Id': Constants.CLIENT_ID
                 }
             }
         );
@@ -59,11 +58,11 @@ export async function getChallengeStreams(token) {
 
     try {
         const response = await axios.get(
-            `https://api.twitch.tv/helix/streams?${queryString}`,
+            `${Constants.TWITCH_STREAMS_ENDPOINT}?${queryString}`,
             {
                 headers: {
                     'Authorization': `${token}`,
-                    'Client-Id': '8nxrw92890jbiwzodkdlcfh70wvgqv'
+                    'Client-Id': Constants.CLIENT_ID
                 }
             }
         );
